@@ -24,6 +24,7 @@
 
 ;;; Code:
 
+(require emlib-math)
 
 
 (provide 'emlib-nn)
