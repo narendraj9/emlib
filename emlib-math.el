@@ -32,9 +32,11 @@
 
 (require 'calc-ext)
 
+
 (defun emlib-mat-dims (matrix)
   "Return dimens of MATRIX as in a cons cell."
   (car matrix))
+
 
 (defun emlib-mat-create (element-function m n)
   "Call ELEMENT-FUNCTION with indices to generate matrix of order M x N.
@@ -55,9 +57,26 @@ Note: currently, matrices are all two dimensional."
     (cons (cons m n) mat-as-vec)))
 
 
-(defun elmlib-vec-create (element-fn size)
-  "Create column vector (with ELEMENT-FN) of SIZE."
-  (emlib-mat-create element-fn (cons size 1)))
+
+(defun emlib-vec-create (element-fn size)
+  "Create column vector (with ELEMENT-FN) of SIZE.
+ELEMENT-FN is a function of one argument, i.e. the row number."
+  (emlib-mat-create (lambda (i _)
+                      (funcall element-fn i))
+                    size 1))
+
+
+(defun emlib-vec-from-seq (x)
+  "Create an internal vector from list X."
+  (emlib-vec-create (lambda (i) (elt x i)) (length x)))
+
+
+(defun emlib-mat-set (matrix i j val)
+  "Set MATRIX element (I,J) to VAL."
+  (let* ((mat-as-vec (cdr matrix))
+         (dims (emlib-mat-dims matrix))
+         (cols (cdr dims)))
+    (aset mat-as-vec (+ (* i cols) j) val)))
 
 
 (defun emlib-mat-get (matrix i j)
@@ -69,9 +88,11 @@ Argument J column number."
          (cols (cdr dims)))
     (aref mat-as-vec (+ (* i cols) j))))
 
+
 (defun emlib-vec-get (v i)
   "Return vector V's Ith element."
   (emlib-mat-get v i 0))
+
 
 (defun emlib-mat-op (op a b)
   "Apply operation OP to respectivve elements of A and B."
@@ -84,6 +105,7 @@ Argument J column number."
     (if (equal a-dims b-dims)
         (emlib-mat-create compose-fn (car a-dims) (cdr a-dims))
       (error "Order of the two matrices must be equal"))))
+
 
 (defun emlib-mat-to-string (mat &optional elem-width)
   "Return string representation for matrix MAT.
@@ -102,13 +124,16 @@ Optional argument ELEM-WIDTH space occupied by elemnt in string."
                          (emlib-mat-get mat i j))))
         (princ "\n")))))
 
+
 (defun emlib-mat-add (a b)
   "Add matrices A and B."
   (emlib-mat-op '+ a b))
 
+
 (defun emlib-mat-sub (a b)
   "Compute A - B."
   (emlib-mat-op '- a b))
+
 
 (defun emlib-mat-scale (mat factor)
   "Scale very element of MAT by FACTOR."
@@ -119,6 +144,20 @@ Optional argument ELEM-WIDTH space occupied by elemnt in string."
                         (* factor (emlib-mat-get mat i j)))
                       rows
                       cols)))
+
+
+(defun emlib-mat-map (f mat)
+  "Map F over elements of matrix MAT.
+Note: This mutates matrix MAT instead of returning a new matrix.  This is for
+efficiency while updating the weights of a Neural Network."
+  (let* ((dims (emlib-mat-dims mat))
+         (rows (car dims))
+         (cols (cdr dims)))
+    (dotimes (i rows)
+      (dotimes (j cols)
+        (emlib-mat-set mat i j (funcall f (emlib-mat-get mat i j)))))
+    mat))
+
 
 (defun emlib-mat-identity (size)
   "Return an identity matrix of order equal to SIZE."
@@ -143,11 +182,22 @@ Optional argument ELEM-WIDTH space occupied by elemnt in string."
       (emlib-mat-create (lambda (i j)
                           (let ((k-range (number-sequence 0 (1- a-cols))))
                             (apply '+
-                                   (mapcar (lambda (k) (* (emlib-mat-get a i k)
-                                                          (emlib-mat-get b k j)))
+                                   (mapcar (lambda (k)
+                                             (* (emlib-mat-get a i k)
+                                                (emlib-mat-get b k j)))
                                            k-range))))
                         a-rows
                         b-cols))))
+
+
+(defun emlib-rand (a b)
+  "Return a random real number in the range [A, B].
+Make sure B > A. Otherwise `random' would ignore its argument."
+  (let ((factor (/ (random most-positive-fixnum)
+                   (* most-positive-fixnum 1.0)))
+        (gap (- b a)))
+    (+ a (* factor gap))))
+
 
 (provide 'emlib-math)
 ;;; emlib-math.el ends here
