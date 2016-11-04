@@ -71,6 +71,15 @@ ELEMENT-FN is a function of one argument, i.e. the row number."
   (emlib-vec-create (lambda (i) (elt x i)) (length x)))
 
 
+(defun emlib-vec-to-seq (x)
+  "Return a sequence with the same elements as vector X.
+
+This function uses the internal representation of a matrix
+directly. If the matrix representation changes, this would need
+to be modified."
+  (cdr x))
+
+
 (defun emlib-mat-set (matrix i j val)
   "Set MATRIX element (I,J) to VAL."
   (let* ((mat-as-vec (cdr matrix))
@@ -92,6 +101,11 @@ Argument J column number."
 (defun emlib-vec-get (v i)
   "Return vector V's Ith element."
   (emlib-mat-get v i 0))
+
+
+(defun emlib-vec-set (v i val)
+  "Set vector V's Ith element to VAL value."
+  (emlib-mat-set v i 0 val))
 
 
 (defun emlib-mat-op (op a b)

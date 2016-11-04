@@ -52,7 +52,9 @@ sure that we can support momentum while updating the weights."
 (defun emlib-layer-feed (layer inputs)
   "Feed into LAYER a vector of INPUTS.
 
-Updates outputs of the layer."
+Updates outputs of the layer. This function doesn't add any new
+inputs. It is assumed that a bias term was added if it was
+needed.  See `emlib-nn-feed'."
   (let* ((layer-weights (plist-get layer :weights))
          (new-outputs (emlib-mat-mult layer-weights
                                       inputs)))
@@ -66,7 +68,10 @@ Updates outputs of the layer."
 HLIST is a list of integers specifying the number of nodes in the
 hidden layers. The last number in HLIST specifies the number of
 nodes in the output layer."
-  (let* ((node-counts (cons i hlist))
+  (let* ((node-counts* (cons i hlist))
+         ;; Add the bias unit to every layer except the last
+         (node-counts (append (mapcar '1+ (butlast node-counts*))
+                              (last node-counts*)))
          (dim-pairs (-zip-with 'cons node-counts (cdr node-counts)))
          (layers (-map (lambda (dim-pair)
                          (emlib-layer-create (car dim-pair)
@@ -76,17 +81,34 @@ nodes in the output layer."
     (list :layers layers)))
 
 
-(defun emlib-nn-feed (network inputs)
+(defun emlib-nn-feed (network inputs-without-bias)
   "Feed INPUTS to NETWORK updating all the layer outputs.
 
-This implements the forward pass for a feedforward neural
-network."
+INPUTS is a sequence of inputs. It is internally converted into a
+vector with `emlib-vec-create' after adding a bias term to
+it.. This implements the forward pass for a feedforward neural
+network.
+
+Note: This function takes care of adding the bias input by
+appending a 1 at the end of the inputs vector"
   (let* ((layers (plist-get network :layers))
-         (output-layer (last layers)))
-    (dolist (layer layers)
+         (hidden-layers (butlast layers))
+         (output-layer (car (last layers)))
+         (inputs (emlib-vec-from-seq (vconcat inputs-without-bias [1]))))
+    ;; Feed-forward through the hidden layers first
+    (dolist (layer hidden-layers)
       (emlib-layer-feed layer inputs)
-      (setq inputs (plist-get layer :outputs)))
-    (plist-get output-layer :outputs)))
+      ;; Now we need to reset the bias unit of the layer to unity.
+      (let* ((outputs (plist-get layer :outputs))
+             (dims (emlib-mat-dims outputs))
+             ;; Since outputs is a column vector
+             (last-idx (1- (car dims))))
+        ;; Reset output of the last unit of this layer.
+        (emlib-vec-set outputs last-idx 1)
+        (setq inputs outputs)))
+    ;; Feeding to output layer outside to avoid resetting last unit.
+    (emlib-layer-feed output-layer inputs)
+    (emlib-vec-to-seq (plist-get (car (last layers)) :outputs))))
 
 
 (provide 'emlib-nn)
