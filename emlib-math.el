@@ -108,6 +108,13 @@ Argument J column number."
   (emlib-mat-set v i 0 val))
 
 
+(defun emlib-vec-append-seq (v s)
+  "Append to the vector V, the contents of sequence S."
+  (let* ((mat-as-vec (cdr v))
+         (new-vec (vconcat mat-as-vec s)))
+    (emlib-vec-from-seq new-vec)))
+
+
 (defun emlib-mat-op (op a b)
   "Apply operation OP to respectivve elements of A and B."
   (let* ((a-dims (emlib-mat-dims a))

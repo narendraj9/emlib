@@ -68,11 +68,8 @@ needed.  See `emlib-nn-feed'."
 HLIST is a list of integers specifying the number of nodes in the
 hidden layers. The last number in HLIST specifies the number of
 nodes in the output layer."
-  (let* ((node-counts* (cons i hlist))
-         ;; Add the bias unit to every layer except the last
-         (node-counts (append (mapcar '1+ (butlast node-counts*))
-                              (last node-counts*)))
-         (dim-pairs (-zip-with 'cons node-counts (cdr node-counts)))
+  (let* ((input-counts (mapcar '1+ (cons i hlist)))
+         (dim-pairs (-zip-with 'cons  input-counts hlist))
          (layers (-map (lambda (dim-pair)
                          (emlib-layer-create (car dim-pair)
                                              (cdr dim-pair)))
@@ -92,22 +89,10 @@ network.
 Note: This function takes care of adding the bias input by
 appending a 1 at the end of the inputs vector"
   (let* ((layers (plist-get network :layers))
-         (hidden-layers (butlast layers))
-         (output-layer (car (last layers)))
          (inputs (emlib-vec-from-seq (vconcat inputs-without-bias [1]))))
-    ;; Feed-forward through the hidden layers first
-    (dolist (layer hidden-layers)
+    (dolist (layer layers)
       (emlib-layer-feed layer inputs)
-      ;; Now we need to reset the bias unit of the layer to unity.
-      (let* ((outputs (plist-get layer :outputs))
-             (dims (emlib-mat-dims outputs))
-             ;; Since outputs is a column vector
-             (last-idx (1- (car dims))))
-        ;; Reset output of the last unit of this layer.
-        (emlib-vec-set outputs last-idx 1)
-        (setq inputs outputs)))
-    ;; Feeding to output layer outside to avoid resetting last unit.
-    (emlib-layer-feed output-layer inputs)
+      (setq inputs (emlib-vec-append-seq (plist-get layer :outputs) [1])))
     (emlib-vec-to-seq (plist-get (car (last layers)) :outputs))))
 
 
