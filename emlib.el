@@ -3,7 +3,10 @@
 ;; Copyright (C) 2016  Narendra Joshi
 
 ;; Author: Narendra Joshi <narendraj9@gmail.com>
-;; Keywords: data
+;; URL: https://github.com/narendraj9/emlib.git
+;; Version: 0.1
+;; Keywords: data, ai, neural networks, ml
+;; Package-Requires: ((dash "2.13.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,13 +24,14 @@
 ;;; Commentary:
 
 ;; A library for experimenting with Machine Learning models inside
-;; Emacs.
+;; Emacs. If you are looking for performance, this might not be the
+;; best place. Or you might take this as a challenge and make the code
+;; performant. Cheers! :)
+;;
 
 ;;; Code:
 
 (require 'emlib-nn)
-(require 'emlib-rnn)
-
 
 (provide 'emlib)
 ;;; emlib.el ends here

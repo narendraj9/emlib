@@ -38,6 +38,11 @@
   (car matrix))
 
 
+(defun emlib-vec-size (v)
+  "Return the size of column vector V."
+  (car (emlib-mat-dims v)))
+
+
 (defun emlib-mat-create (element-function m n)
   "Call ELEMENT-FUNCTION with indices to generate matrix of order M x N.
 
@@ -169,8 +174,9 @@ Optional argument ELEM-WIDTH space occupied by elemnt in string."
 
 (defun emlib-mat-map (f mat)
   "Map F over elements of matrix MAT.
-Note: This mutates matrix MAT instead of returning a new matrix.  This is for
-efficiency while updating the weights of a Neural Network."
+Note: This mutates matrix MAT instead of returning a new matrix.
+This is for efficiency while updating the weights of a Neural
+Network."
   (let* ((dims (emlib-mat-dims mat))
          (rows (car dims))
          (cols (cdr dims)))
@@ -211,6 +217,17 @@ efficiency while updating the weights of a Neural Network."
                         b-cols))))
 
 
+(defun emlib-mat-transpose (matrix)
+  "Compute the transpose of MATRIX."
+  (let* ((dims (emlib-mat-dims matrix))
+         (rows (car dims))
+         (cols (cdr dims)))
+    (emlib-mat-create (lambda (i j)
+                        (emlib-mat-get matrix j i))
+                      cols
+                      rows)))
+
+
 (defun emlib-rand (a b)
   "Return a random real number in the range [A, B].
 Make sure B > A. Otherwise `random' would ignore its argument."
@@ -218,6 +235,23 @@ Make sure B > A. Otherwise `random' would ignore its argument."
                    (* most-positive-fixnum 1.0)))
         (gap (- b a)))
     (+ a (* factor gap))))
+
+
+(defun emlib-rand-mat (i j)
+  "Generate a matrix of I x J order with random elements."
+  (emlib-mat-create (lambda (_ _)
+                      (emlib-rand -1 1))
+                    i
+                    j))
+
+
+(defun emlib-sigmoid (x)
+  "Compute sigmod of X.
+
+Sigmoid(X) = 1 / (1 + e^-X)"
+  (/ 1.0 (+ 1.0 (exp (- x)) )))
+
+
 
 
 (provide 'emlib-math)
