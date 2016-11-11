@@ -80,7 +80,7 @@ ELEMENT-FN is a function of one argument, i.e. the row number."
   "Return a sequence with the same elements as vector X.
 
 This function uses the internal representation of a matrix
-directly. If the matrix representation changes, this would need
+directly.  If the matrix representation changes, this would need
 to be modified."
   (cdr x))
 

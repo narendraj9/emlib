@@ -195,7 +195,9 @@ units, we derive the weight updates and tune NETWORK."
 
 (defun emlib--nn-backprop (network input-vector target-vector)
   "Perform backprop set for NETWORK given expected TARGETS.
-TARGET is a emlib vector."
+TARGET is a emlib vector.
+Argument INPUT-VECTOR is the vector of inputs fed to the network.
+Argument TARGET-VECTOR is the expected result of feeding INPUT-VECTOR."
   (emlib--nn-eterms-for-output-layer network target-vector)
   (emlib--nn-eterms-backprop network)
   (emlib--nn-weights-update network input-vector))
@@ -204,8 +206,8 @@ TARGET is a emlib vector."
 (defun emlib-nn-train (network input output &optional)
   "Train NETWORK on example (INPUT, OUTPUT).
 
-INPUT and OUTPUT must be sequences. They are internally kept as
-emlib vectors. This performs a forward feed step followed by
+INPUT and OUTPUT must be sequences.  They are internally kept as
+emlib vectors.  This performs a forward feed step followed by
 backprop to tune weights based on a single input using stochastic
 gradient descent."
   (let ((input-vector (emlib-vec-from-seq input))
