@@ -246,7 +246,7 @@ Make sure B > A. Otherwise `random' would ignore its argument."
 
 
 (defun emlib-sigmoid (x)
-  "Compute sigmod of X.
+  "Compute sigmoid of X.
 
 Sigmoid(X) = 1 / (1 + e^-X)"
   (/ 1.0 (+ 1.0 (exp (- x)) )))

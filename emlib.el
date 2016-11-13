@@ -6,7 +6,7 @@
 ;; URL: https://github.com/narendraj9/emlib.git
 ;; Version: 0.1
 ;; Keywords: data, ai, neural networks, ml
-;; Package-Requires: ((dash "2.13.0"))
+;; Package-Requires: ((dash "2.13.0") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
