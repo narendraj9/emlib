@@ -203,7 +203,7 @@ Argument TARGET-VECTOR is the expected result of feeding INPUT-VECTOR."
   (emlib--nn-weights-update network input-vector))
 
 
-(defun emlib-nn-train (network input output &optional)
+(defun emlib-nn-train (network input output)
   "Train NETWORK on example (INPUT, OUTPUT).
 
 INPUT and OUTPUT must be sequences.  They are internally kept as
