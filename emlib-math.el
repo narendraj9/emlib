@@ -239,7 +239,7 @@ Make sure B > A. Otherwise `random' would ignore its argument."
 
 (defun emlib-rand-mat (i j)
   "Generate a matrix of I x J order with random elements."
-  (emlib-mat-create (lambda (_ _)
+  (emlib-mat-create (lambda (_a _b)
                       (emlib-rand -1 1))
                     i
                     j))
