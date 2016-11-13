@@ -38,7 +38,7 @@ sure that we can support momentum while updating the weights.  An
 vector of error terms is also kept in the layer property list to
 aid the back propagation step."
   (let* ((w (emlib-rand-mat h i))
-         (dw (emlib-mat-create (lambda (_ _) 0) h i))
+         (dw (emlib-mat-create (lambda (_a _b) 0) h i))
          (o (emlib-vec-create (lambda (_) 0) h))
          (eterms (emlib-vec-create (lambda (_) 0) h)))
     (list :weights w
