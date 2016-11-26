@@ -25,6 +25,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'cl-lib)
 (require 'emlib-math)
 
 
@@ -154,12 +155,20 @@ been computed."
                     current-layer-eterm-count))))))
 
 
-(defun emlib--nn-weights-update (network input-vector)
+(defun emlib--nn-weights-update (network
+                                 input-vector
+                                 learning-rate
+                                 momentum)
   "Update the weights of all units in NETWORK for INPUT-VECTOR.
 
-Note: NETWORK should have corret values for the error terms.
-Assuming that the error terms are computed for all the neuron
-units, we derive the weight updates and tune NETWORK."
+Note: NETWORK should haveis the rate of learning while updating
+the weights.  corret values for the error terms.  Assuming that
+the error terms are computed for all the neuron units, we derive
+the weight updates and tune NETWORK.is the rate of .
+
+Argument LEARNING-RATE is the rate of learning.
+Argument MOMENTUM is the momentum the fraction of the last weight change
+that affects the current weight change."
   (let ((layers (plist-get network :layers))
         ;; Add the bias term to the input vector
         (inputs (emlib-vec-append-seq input-vector [1])))
@@ -175,15 +184,13 @@ units, we derive the weight updates and tune NETWORK."
                                  (emlib-mat-mult
                                   eterms
                                   (emlib-mat-transpose inputs))
-                                 ;; hard-coded learning rate **TOFIX**
-                                 0.1)))
+                                 learning-rate)))
         (plist-put layer
                    :weights
                    (emlib-mat-create (lambda (i j)
                                        (+ (emlib-mat-get weights i j)
                                           (emlib-mat-get new-delta-weights i j)
-                                          ;; **TOFIX** hard-coding momentum
-                                          (* 0.01
+                                          (* momentum
                                              (emlib-mat-get delta-weights i j))))
                                      (car weights-dims)
                                      (cdr weights-dims)))
@@ -193,17 +200,37 @@ units, we derive the weight updates and tune NETWORK."
         (setq inputs (emlib-vec-append-seq (plist-get layer :outputs) [1]))))))
 
 
-(defun emlib--nn-backprop (network input-vector target-vector)
+(defun emlib--nn-backprop (network
+                           input-vector
+                           target-vector
+                           learning-rate
+                           momentum)
   "Perform backprop set for NETWORK given expected TARGETS.
 TARGET is a emlib vector.
+
 Argument INPUT-VECTOR is the vector of inputs fed to the network.
-Argument TARGET-VECTOR is the expected result of feeding INPUT-VECTOR."
+
+Argument TARGET-VECTOR is the expected result of feeding
+INPUT-VECTOR.
+
+Argument LEARNING-RATE is the learning rate for weight updates.
+
+Argument MOMENTUM is the fraction of the previous weight updates
+that affects current update."
   (emlib--nn-eterms-for-output-layer network target-vector)
   (emlib--nn-eterms-backprop network)
-  (emlib--nn-weights-update network input-vector))
+  (emlib--nn-weights-update network
+                            input-vector
+                            learning-rate
+                            momentum))
 
 
-(defun emlib-nn-train (network input output)
+(cl-defun emlib-nn-train (network
+                          input
+                          output
+                          &key
+                          (learning-rate 0.1)
+                          (momentum 0.1))
   "Train NETWORK on example (INPUT, OUTPUT).
 
 INPUT and OUTPUT must be sequences.  They are internally kept as
@@ -215,7 +242,11 @@ gradient descent."
     ;; Let's feed the input first to change all the unit outputs.
     (emlib-nn-feed network input)
     ;; Now perform the backpropagation step
-    (emlib--nn-backprop network input-vector target-vector)))
+    (emlib--nn-backprop network
+                        input-vector
+                        target-vector
+                        learning-rate
+                        momentum)))
 
 
 (provide 'emlib-nn)
